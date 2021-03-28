@@ -12,6 +12,9 @@ blocks:
           commands:
             - sem-service start postgres
             - sem-version go 1.13
+            - export APP_DB_USERNAME=postgres
+            - export APP_DB_PASSWORD=
+            - export APP_DB_NAME=postgres
             - export GO111MODULE=on
             - export GOPATH=~/go
             - 'export PATH=/home/semaphore/go/bin:$PATH'
