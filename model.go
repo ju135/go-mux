@@ -67,6 +67,12 @@ func getProducts(db *sql.DB, start, count int) ([]product, error) {
 	return products, nil
 }
 
+func getCheapestProduct(db *sql.DB) (product, error) {
+	var p product
+	err := db.QueryRow("SELECT name, price FROM products ORDER BY price ASC").Scan(&p.Name, &p.Price)
+	return p, err
+}
+
 func getProductIds(db *sql.DB) ([]int, error) {
 	rows, err := db.Query("SELECT id FROM products")
 	defer rows.Close()
