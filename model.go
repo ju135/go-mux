@@ -66,3 +66,17 @@ func getProducts(db *sql.DB, start, count int) ([]product, error) {
 
 	return products, nil
 }
+
+func getProductIds(db *sql.DB) ([]int, error) {
+	rows, err := db.Query("SELECT id FROM products")
+	defer rows.Close()
+	var ids []int
+	for rows.Next() {
+		var id int
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, err
+}

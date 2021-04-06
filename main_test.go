@@ -105,6 +105,20 @@ func TestGetProduct(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
+func TestGetRandomProduct(t *testing.T) {
+	clearTable()
+	req1, _ := http.NewRequest("GET", "/product/random", nil)
+	response1 := executeRequest(req1)
+	checkResponseCode(t, http.StatusNoContent, response1.Code)
+
+	addProducts(1)
+
+	req, _ := http.NewRequest("GET", "/product/random", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+}
+
 func addProducts(count int) {
 	if count < 1 {
 		count = 1
