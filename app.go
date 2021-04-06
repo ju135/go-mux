@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 
@@ -42,6 +43,8 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/products", a.getProducts).Methods("GET")
 	a.Router.HandleFunc("/product", a.createProduct).Methods("POST")
 	a.Router.HandleFunc("/product/{id:[0-9]+}", a.getProduct).Methods("GET")
+	a.Router.HandleFunc("/product/cheapest", a.getCheapestProduct).Methods("GET")
+	a.Router.HandleFunc("/product/random", a.getRandomProduct).Methods("GET")
 	a.Router.HandleFunc("/product/{id:[0-9]+}", a.updateProduct).Methods("PUT")
 	a.Router.HandleFunc("/product/{id:[0-9]+}", a.deleteProduct).Methods("DELETE")
 }
@@ -55,6 +58,44 @@ func (a *App) getProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p := product{ID: id}
+	if err := p.getProduct(a.DB); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			respondWithError(w, http.StatusNotFound, "Product not found")
+		default:
+			respondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, p)
+}
+
+func (a *App) getCheapestProduct(w http.ResponseWriter, r *http.Request) {
+	p, err := getCheapestProduct(a.DB)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, p)
+}
+
+func (a *App) getRandomProduct(w http.ResponseWriter, r *http.Request) {
+	ids, err := getProductIds(a.DB)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if ids == nil {
+		respondWithError(w, http.StatusNoContent, "No products exist")
+		return
+	}
+
+	randomIndex := rand.Intn(len(ids))
+	randomId := ids[randomIndex]
+
+	p := product{ID: randomId}
 	if err := p.getProduct(a.DB); err != nil {
 		switch err {
 		case sql.ErrNoRows:

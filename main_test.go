@@ -105,6 +105,41 @@ func TestGetProduct(t *testing.T) {
 	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
+func TestGetCheapestProduct(t *testing.T) {
+	clearTable()
+	price1 := 10
+	price2 := 5
+	price3 := 30
+	a.DB.Exec("INSERT INTO products(name, price) VALUES($1, $2)", "Product 1", price1)
+	a.DB.Exec("INSERT INTO products(name, price) VALUES($1, $2)", "Product 2", price2)
+	a.DB.Exec("INSERT INTO products(name, price) VALUES($1, $2)", "Product 3", price3)
+
+	req, _ := http.NewRequest("GET", "/product/cheapest", nil)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	var m map[string]int
+	json.Unmarshal(response.Body.Bytes(), &m)
+
+	if m["price"] != price2 {
+		t.Errorf("Expected product price to be '%v'. Got '%v'", price1, m["price"])
+	}
+}
+
+func TestGetRandomProduct(t *testing.T) {
+	clearTable()
+	req1, _ := http.NewRequest("GET", "/product/random", nil)
+	response1 := executeRequest(req1)
+	checkResponseCode(t, http.StatusNoContent, response1.Code)
+
+	addProducts(1)
+
+	req, _ := http.NewRequest("GET", "/product/random", nil)
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+}
+
 func addProducts(count int) {
 	if count < 1 {
 		count = 1
