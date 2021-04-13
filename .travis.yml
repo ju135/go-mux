@@ -1,0 +1,16 @@
+os: linux
+
+language: go
+
+go:
+  - 1.14.x
+
+services:
+  - postgresql
+  - docker
+
+script:
+  # Test the code
+  - go test -v ./...
+  # Build the code
+  - CGO_ENABLED=0 GOARCH=amd64 go build -v -o go-mux-api
